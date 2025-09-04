@@ -1,9 +1,10 @@
 # For more information about using CMake with Android Studio, read the
 # documentation: https://d.android.com/studio/projects/add-native-code.html
-
+project(native-lib)
 # Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.4.1)
+
+set(CMAKE_CXX_STANDARD 20)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -20,6 +21,11 @@ include_directories(libnode/include/node/)
 add_library( libnode
              SHARED
              IMPORTED )
+
+target_link_options( ${CMAKE_PROJECT_NAME} 
+                     PRIVATE                              
+                     "-Wl,-z,max-page-size=16384" )
+
 
 set_target_properties( libnode
                        PROPERTIES IMPORTED_LOCATION
