@@ -1,5 +1,7 @@
 # 📱 Capacitor NodeJS-Integration
 
+This is a fork of https://github.com/hampoelz/Capacitor-NodeJS with Node 24.x built with `--with-intl=small-icu`. It only includes an arm64 build. 
+
 :arrow_right: A full-fledged [Node.js](https://nodejs.org/) runtime for [Capacitor](https://capacitorjs.com) apps.
 
 > [!NOTE]  
@@ -538,7 +540,7 @@ In `capacitor.config.json`:
 In `capacitor.config.ts`:
 
 ```ts
-/// <reference types="capacitor-nodejs" />
+/// <reference types="@jadejr/capacitor-nodejs" />
 
 import { CapacitorConfig } from '@capacitor/cli';
 
