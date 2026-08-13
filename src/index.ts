@@ -1,4 +1,3 @@
-import { NodeJS } from './NodeJS';
+export { NodeJS } from './NodeJS.js';
 
-export * from './definitions';
-export { NodeJS };
+export * from './definitions.js';

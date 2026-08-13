@@ -1,8 +1,8 @@
 import type { PluginListenerHandle } from '@capacitor/core';
 import { Capacitor } from '@capacitor/core';
 
-import type { ChannelPayloadData, ChannelCallbackData, ChannelListenerCallback, StartOptions } from './definitions';
-import { CapacitorNodeJS } from './implementation';
+import type { ChannelPayloadData, ChannelCallbackData, ChannelListenerCallback, StartOptions } from './definitions.js';
+import { CapacitorNodeJS } from './implementation.js';
 
 export interface NodeJSInterface {
   /**

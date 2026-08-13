@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events';
 import process from 'process';
 
-import type { NativeBridge, NativeBridgePayloadData, NativeBridgeCallback, Platform } from './definitions';
-import { ChannelMessageCodec } from './utils';
+import type { NativeBridge, NativeBridgePayloadData, NativeBridgeCallback, Platform } from './definitions.js';
+import { ChannelMessageCodec } from './utils.js';
 
 class NativeMobileBridge implements NativeBridge {
   private mobileBridge = (process as any)._linkedBinding('nativeBridge');

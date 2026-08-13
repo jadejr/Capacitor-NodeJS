@@ -1,7 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 import type { CapacitorException } from '@capacitor/core';
 
-import type { CapacitorNodeJSPlugin } from './implementation';
+import type { CapacitorNodeJSPlugin } from './implementation.js';
 
 export class CapacitorNodeJSWeb extends WebPlugin implements CapacitorNodeJSPlugin {
   protected unavailableNodeJS(): CapacitorException {

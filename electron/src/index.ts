@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
-import type { StartOptions, ChannelCallbackData, ChannelPayloadData } from '../../src/definitions';
+import type { StartOptions, ChannelCallbackData, ChannelPayloadData } from '../../src/definitions.js';
 
 import { CapacitorNodeJSImplementation } from './implementation';
 

@@ -1,6 +1,6 @@
-import type { ChannelPayloadData as EventPayloadData } from '../../src/definitions';
+import type { ChannelPayloadData as EventPayloadData } from '../../src/definitions.js';
 
-import type { NativeBridgeChannelMessageData } from './definitions';
+import type { NativeBridgeChannelMessageData } from './definitions.js';
 
 export class ChannelMessageCodec {
   static serialize(payload: EventPayloadData): string {

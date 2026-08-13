@@ -1,4 +1,4 @@
-import { appChannel, eventChannel, onResume, onPause, getDataPath } from './bridge';
+import { appChannel, eventChannel, onResume, onPause, getDataPath } from './bridge.js';
 
 appChannel.send('ready');
 

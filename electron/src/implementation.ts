@@ -4,9 +4,9 @@ import { app } from 'electron';
 import { existsSync } from 'fs';
 import { join as joinPath } from 'path';
 
-import type { NativeBridgePayloadData } from '../../bridge/src/definitions';
-import { ChannelMessageCodec } from '../../bridge/src/utils';
-import type { ChannelPayloadData, NodeEnv } from '../../src/definitions';
+import type { NativeBridgePayloadData } from '../../bridge/src/definitions.js';
+import { ChannelMessageCodec } from '../../bridge/src/utils.js';
+import type { ChannelPayloadData, NodeEnv } from '../../src/definitions.js';
 
 import { CapacitorNodeJS } from './index';
 import { joinEnv } from './utils';

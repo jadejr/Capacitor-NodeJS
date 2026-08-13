@@ -1,7 +1,7 @@
 import type { PluginListenerHandle } from '@capacitor/core';
 import { registerPlugin } from '@capacitor/core';
 
-import type { ChannelPayloadData, ChannelListenerCallback, StartOptions } from './definitions';
+import type { ChannelPayloadData, ChannelListenerCallback, StartOptions } from './definitions.js';
 
 export interface CapacitorNodeJSPlugin {
   start(args?: StartOptions): Promise<void>;
@@ -15,7 +15,7 @@ export interface CapacitorNodeJSPlugin {
 }
 
 const CapacitorNodeJS = registerPlugin<CapacitorNodeJSPlugin>('CapacitorNodeJS', {
-  web: () => import('./web').then((m) => new m.CapacitorNodeJSWeb()),
+  web: () => import('./web.js').then((m) => new m.CapacitorNodeJSWeb()),
   electron: () => (window as any).CapacitorCustomPlatform.plugins.CapacitorNodeJS,
 });
 

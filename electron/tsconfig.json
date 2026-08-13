@@ -7,13 +7,13 @@
 
         "declaration": true,
         "sourceMap": true,
+        "rootDir": "..",
         "outDir": "build",
 
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
         "noEmitHelpers": true,
         "importHelpers": true,
-
         "pretty": true,
     },
     "include": [
