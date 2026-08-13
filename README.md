@@ -520,7 +520,7 @@ These config values are available:
 | Prop            | Type                            | Description                                                                                                                                                                                                                               | Default               | Since |
 | --------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ----- |
 | **`nodeDir`**   | <code>string</code>             | Relative path of the integrated Node.js project based on the Capacitor webdir.                                                                                                                                                            | <code>"nodejs"</code> | 1.0.0 |
-| **`startMode`** | <code>'auto' \| 'manual'</code> | Startup mode of the Node.js engine. The following values are accepted: **`auto`**: The Node.js engine starts automatically when the application is launched. **`manual`**: The Node.js engine is started via the `NodeJS.start()` method. | <code>"auto"</code>   | 1.0.0 |
+| **`startMode`** | <code>'manual' \| 'auto'</code> | Startup mode of the Node.js engine. The following values are accepted: **`auto`**: The Node.js engine starts automatically when the application is launched. **`manual`**: The Node.js engine is started via the `NodeJS.start()` method. | <code>"auto"</code>   | 1.0.0 |
 
 ### Examples
 
