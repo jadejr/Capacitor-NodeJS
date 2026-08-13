@@ -12,9 +12,11 @@
     'msvs_multi_core_compile': '0',   # we do enable multicore compiles, but not using the V8 way
     'enable_pgo_generate%': '0',
     'enable_pgo_use%': '0',
+    'clang_profile_lib%': '',
     'python%': 'python',
 
     'node_shared%': 'false',
+    'node_enable_experimentals%': 'false',
     'force_dynamic_crt%': 0,
     'node_use_v8_platform%': 'true',
     'node_use_bundled_v8%': 'true',
@@ -38,7 +40,7 @@
 
     # Reset this number to 0 on major V8 upgrades.
     # Increment by one for each non-official patch applied to deps/v8.
-    'v8_embedder_string': '-node.21',
+    'v8_embedder_string': '-node.50',
 
     ##### V8 defaults for Node.js #####
 
@@ -192,7 +194,7 @@
             ['clang==1', {
               'lto': ' -flto ', # Clang
             }, {
-              'lto': ' -flto=4 -fuse-linker-plugin -ffat-lto-objects ', # GCC
+              'lto': ' -flto=4 -ffat-lto-objects ', # GCC
             }],
           ],
         },
@@ -219,6 +221,23 @@
               }],
             ],
           }],
+          ['OS=="android"', {
+            # nodejs-mobile: emit a GNU build-id on libnode.so so Sentry can
+            # match the AGP-stripped runtime binary to uploaded debug files for
+            # native crash symbolication. Android-only on purpose: Mach-O has
+            # no --build-id — Apple's ld emits an LC_UUID load command
+            # unconditionally, and that UUID is what symbolicators match dSYMs
+            # by, so iOS needs no equivalent flag. Behaviour-neutral; applies to both
+            # flavors (see docs/BUILDING.md on the recipe branch). These also
+            # reach the host build-tools, which is harmless on the Linux build
+            # host (GNU ld); Android is built on Linux (a macOS host can't link
+            # the cross-build — see that same BUILDING.md). _toolset isn't
+            # available in load-time conditions, so it can't be scoped out here.
+            # --gc-sections (both flavors): split sections and drop
+            # unreferenced ones; per-function codegen is unchanged.
+            'cflags': [ '-ffunction-sections', '-fdata-sections' ],
+            'ldflags': [ '-Wl,--build-id=sha1', '-Wl,--gc-sections' ],
+          }],
           ['OS=="solaris"', {
             # pull in V8's postmortem metadata
             'ldflags': [ '-Wl,-z,allextract' ]
@@ -242,6 +261,65 @@
               ['enable_pgo_use=="true"', {
                 'cflags': ['<(pgo_use)'],
                 'ldflags': ['<(pgo_use)'],
+              },],
+            ],
+          },],
+          ['OS=="win"', {
+            'conditions': [
+              ['enable_lto=="true"', {
+                'msvs_settings': {
+                  'VCCLCompilerTool': {
+                    'AdditionalOptions': ['-flto=full'],
+                  },
+                  'VCLibrarianTool': {
+                    'AdditionalOptions': ['-flto=full'],
+                  },
+                  'VCLinkerTool': {
+                    'AdditionalOptions': ['-flto=full'],
+                  },
+                },
+              },],
+              ['enable_thin_lto=="true"', {
+                'msvs_settings': {
+                  'VCCLCompilerTool': {
+                    'AdditionalOptions': ['-flto=thin'],
+                  },
+                  'VCLibrarianTool': {
+                    'AdditionalOptions': ['-flto=thin'],
+                  },
+                  'VCLinkerTool': {
+                    'AdditionalOptions': ['-flto=thin'],
+                  },
+                },
+              },],
+            ],
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'conditions': [
+                  ['enable_pgo_generate=="true"', {
+                    'msvs_settings': {
+                      'VCCLCompilerTool': {
+                        'AdditionalOptions': ['-fprofile-generate'],
+                      },
+                      'VCLinkerTool': {
+                        'AdditionalOptions': [
+                          '/NODEFAULTLIB:clang_rt.profile.lib',
+                          '"<(clang_profile_lib)"',
+                        ],
+                      },
+                    },
+                  },],
+                  ['enable_pgo_use=="true"', {
+                    'msvs_settings': {
+                      'VCCLCompilerTool': {
+                        'AdditionalOptions': ['-fprofile-use=$(SolutionDir)node.profdata'],
+                      },
+                      'VCLinkerTool': {
+                        'AdditionalOptions': ['-fprofile-use=$(SolutionDir)node.profdata'],
+                      },
+                    },
+                  },],
+                ],
               },],
             ],
           },],
@@ -440,17 +518,20 @@
       }],
       # The defines bellow must include all things from the external_v8_defines
       # list in v8/BUILD.gn.
+      ['node_enable_experimentals == "true"', {
+        'defines': ['EXPERIMENTALS_DEFAULT_VALUE=true'],
+      }],
       ['v8_enable_v8_checks == 1', {
         'defines': ['V8_ENABLE_CHECKS'],
       }],
       ['v8_enable_pointer_compression == 1', {
         'defines': ['V8_COMPRESS_POINTERS'],
       }],
+      ['v8_enable_pointer_compression == 1 and v8_enable_pointer_compression_shared_cage != 1', {
+        'defines': ['V8_COMPRESS_POINTERS_IN_MULTIPLE_CAGES'],
+      }],
       ['v8_enable_pointer_compression_shared_cage == 1', {
         'defines': ['V8_COMPRESS_POINTERS_IN_SHARED_CAGE'],
-      }],
-      ['v8_enable_pointer_compression == 1 and v8_enable_pointer_compression_shared_cage != 1', {
-        'defines': ['V8_COMPRESS_POINTERS_IN_ISOLATE_CAGE'],
       }],
       ['v8_enable_pointer_compression == 1 or v8_enable_31bit_smis_on_64bit_arch == 1', {
         'defines': ['V8_31BIT_SMIS_ON_64BIT_ARCH'],
@@ -530,7 +611,7 @@
           ['_toolset=="host"', {
             'conditions': [
               # nodejs-mobile patch: https://github.com/nodejs/node/pull/57748
-              [ 'host_arch=="ia32" or (target_arch=="ia32" or target_arch=="arm")', {
+              [ 'host_arch=="ia32" or (host_arch=="x64" and (target_arch=="ia32" or target_arch=="arm"))', {
                 'cflags': [ '-m32' ],
                 'ldflags': [ '-m32' ],
               }],
@@ -540,7 +621,12 @@
                 'ldflags': [ '-m64' ],
               }],
               [ 'host_arch=="ppc64" and OS not in "aix os400"', {
-                'cflags': [ '-m64', '-mminimal-toc' ],
+                'conditions': [
+                  [ 'clang==0', {
+                    'cflags': [ '-mminimal-toc' ],
+                  }],
+                ],
+                'cflags': [ '-m64' ],
                 'ldflags': [ '-m64' ],
               }],
               [ 'host_arch=="s390x" and OS=="linux"', {
@@ -560,7 +646,12 @@
                 'ldflags': [ '-m64' ],
               }],
               [ 'target_arch=="ppc64" and OS not in "aix os400"', {
-                'cflags': [ '-m64', '-mminimal-toc' ],
+                'conditions': [
+                  [ 'clang==0', {
+                    'cflags': [ '-mminimal-toc' ],
+                  }],
+                ],
+                'cflags': [ '-m64' ],
                 'ldflags': [ '-m64' ],
               }],
               [ 'target_arch=="s390x" and OS=="linux"', {
@@ -602,7 +693,7 @@
             ],
           }, {                                             # else it's `AIX`
             'variables': {
-              'gcc_major': '<!(<(python) -c "import os; import subprocess; CXX=os.environ.get(\'CXX\', \'g++\'); subprocess.run([CXX, \'-dumpversion\'])")'
+              'gcc_major': '<!(sh -c "${CXX:-g++} -dumpversion")'
             },
             # Disable the following compiler warning:
             #
@@ -702,6 +793,7 @@
         'target_conditions': [
           ['_toolset=="host"', {
             'xcode_settings': {
+              'SDKROOT': 'macosx',
               'MACOSX_DEPLOYMENT_TARGET': '13.5',   # Use macOS deployment target for host tools
               'WARNING_CFLAGS': [
                 '-Wall',
@@ -732,14 +824,9 @@
             'conditions': [
               ['iossim!="true" and target_arch in "arm64 arm armv7s"', {
                 'xcode_settings': {
+                  # Bitcode was removed in Xcode 14; ENABLE_BITCODE/-fembed-bitcode
+                  # now error on modern Xcode (incl. CI's Xcode 16.4).
                   'SDKROOT': 'iphoneos',
-                  'ENABLE_BITCODE': 'YES',
-                  'OTHER_CFLAGS': [
-                    '-fembed-bitcode'
-                  ],
-                  'OTHER_CPLUSPLUSFLAGS': [
-                    '-fembed-bitcode'
-                  ],
                 }
               }, {
                 'xcode_settings': {
